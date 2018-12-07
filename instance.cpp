@@ -9,7 +9,6 @@ instance::instance(char archivo [1000])
     memset(cuadricula, 0, sizeof(cuadricula));
     FILE* pFile;
     pFile = fopen(archivo, "r");
-    //std::ifstream archivo;
     int sector1, sector2, sector3, sector4, sector5, sector6, sector7, sector8, sector9 ;
     char c;
     char num1, num2, num3, num4, num5, num6, num7, num8, num9;
@@ -40,6 +39,13 @@ instance::instance(char archivo [1000])
                 if (fila[i] > 0){
                     this -> cuadricula [cont][i] = fila[i];
 
+                }
+
+                else{
+                    unassigned casilla_vacia;
+                    casilla_vacia.fila = cont;
+                    casilla_vacia.columna = i;
+                    this ->casillas_vacias.push_back(casilla_vacia);
                 }
                 this -> sectores[cont][i] = sectors[i];
 

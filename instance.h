@@ -7,12 +7,18 @@ typedef struct{
     int suma_segmento;
 }segmento;
 
+typedef struct{
+    int fila; 
+    int columna;
+} unassigned;
+
 class instance
 {
 public:
     int cuadricula[9][9];
     int  sectores [9][9];
     std::list <segmento> segmentos;
+    std::list <unassigned> casillas_vacias;
 public:
     instance(char archivo[1000]);
     ~instance();
