@@ -4,61 +4,70 @@
 #include <string.h>
 #include "instance.h"
 
-bool CheckRows(int grilla[9][9], int fila){
-    int see_num [] = {0,0,0,0,0,0,0,0,0};
-
-    for(int i = 0; i < 9; ++i){
-        see_num[grilla[fila][i] - 1] += 1;
-    }
-
-    for(int i = 0; i < 9; ++i){
-        if(see_num[i] > 1){
-            return false;
+bool noAsignadas(int& fila, int& columna, int grilla[9][9], std::list <unassigned> casillas_vacias){
+    std:: list <unassigned>:: iterator iterador = casillas_vacias.begin();
+    while(iterador != casillas_vacias.end()){
+        int row = iterador -> fila;
+        int col = iterador -> columna;
+        if (grilla[row][col] == 0){
+            fila = row;
+            columna = col;
+            return true;
         }
+        ++iterador;
     }
-
-    return true;
+    return false;
 }
-bool CheckColumns(int grilla[9][9], int columna){
-    int see_num [] = {0,0,0,0,0,0,0,0,0};
+
+bool CheckRows(int grilla[9][9], int fila, int num){
+    //int see_num [] = {0,0,0,0,0,0,0,0,0};
 
     for(int i = 0; i < 9; ++i){
-        see_num[grilla[i][columna] - 1] += 1;
-    }
-
-    for(int i = 0; i < 9; ++i){
-        if(see_num[i] > 1){
+        if(grilla[fila][i] == num){
             return false;
-        }
+        } 
     }
     return true;
 }
-bool  CheckSubGrids(int grilla[9][9], int fila, int columna){
+bool CheckColumns(int grilla[9][9], int columna, int num){
+    //int see_num [] = {0,0,0,0,0,0,0,0,0};
+
+    for(int i = 0; i < 9; ++i){
+        
+        if (grilla[i][columna]==num) {
+            return false;
+        }
+    }
+    return true;
+}
+bool  CheckSubGrids(int grilla[9][9], int fila, int columna, int num){
     int fila_inicio = fila - fila%3;
     int columna_inicio = columna - columna%3;
-    int see_num [] = {0,0,0,0,0,0,0,0,0};
+    //int see_num [] = {0,0,0,0,0,0,0,0,0};
 
     for(int i = fila_inicio ; i < fila_inicio + 3; ++i){
         for(int j = columna_inicio; j < columna_inicio + 3; ++j){
-            see_num[grilla[i][j] - 1] += 1;
-        }
-    }
-
-    for(int i = 0; i < 9; ++i){
-        if (see_num[i] > 1){
-            return false;
+            
+            if (grilla[i][j] == num) {
+                return false;
+            }
         }
     }
     return true;
-
 }
 
-bool CheckSum(int grilla[9][9], int sectores[9][9],int seg, std::list <segmento> segmentos){
+bool CheckSum(int grilla[9][9], int sectores[9][9], std::list <segmento> segmentos, int fila, int columna, int num){
     int suma = 0;
+    int casVacias = 0;
+    int seg = sectores[fila][columna];
     
     for(int i = 0; i < 9; i++){
         for(int j = 0; j < 9; j++){
             if (sectores[i][j] == seg){
+                if(grilla[i][j] == 0)
+                    ++casVacias; 
+                if(i == fila && columna == j)
+                    suma += num;
                 suma += grilla[i][j]; 
             }
         }
@@ -68,63 +77,58 @@ bool CheckSum(int grilla[9][9], int sectores[9][9],int seg, std::list <segmento>
     while (iterador -> identificador != seg){
         iterador++;
     }
-    if(suma == iterador -> suma_segmento)
+
+    int suma_segmento = iterador -> suma_segmento;
+
+    if(suma == suma_segmento && casVacias ==0)
         return true;
+
+    if( suma <= suma_segmento  && casVacias > 0)
+        return true;
+    
     return false;
 
 }
 
-int pico(int grilla[9][9]){
-    grilla[0][1] = 100000;
-    return 1;
+bool asignacionValida(int grilla[9][9], int sectores[9][9], std:: list<segmento> segmentos, std::list <unassigned> casillas_vacias, int fila, int columna, int num){
+    bool checkFilas = CheckRows(grilla, fila, num);
+    bool checkColumnas = CheckColumns(grilla, columna, num);
+    bool checkSubGrilla = CheckSubGrids(grilla, fila, columna, num);
+    bool checkSuma = CheckSum(grilla, sectores, segmentos, fila, columna, num);
+    return checkFilas && checkColumnas && checkSubGrilla && checkSuma;
 } 
 
 bool ForwardChecking(int grilla[9][9], int sectores[9][9], std::list <segmento> segmentos, std::list <unassigned> casillas_vacias){
     int row, col;
-    row = casillas_vacias.front().fila;
-    col = casillas_vacias.front().columna;
-    std:: cout << "fila: " << row << "\n";
-    std:: cout << "columna: " << col << "\n";
-    //  casillas_vacias.pop_front();
-    if (casillas_vacias.empty()){
-        std:: cout << "True\n";
+    if (!noAsignadas(row, col, grilla, casillas_vacias)){
         return true;
-    } 
-    
-    for(int num = 1; num <10; num++){
-        int segmento = sectores[row][col];
-        grilla[row][col] = num;
-        if(CheckRows(grilla, row) && CheckColumns(grilla, col) && CheckSubGrids(grilla, row, col) && CheckSum(grilla, sectores, segmento, segmentos)){
-            
-
+    }
+    for(int num = 9; num > 0; --num){
+        if(asignacionValida(grilla, sectores, segmentos, casillas_vacias, row, col, num)){
+           grilla[row][col] = num; 
             if(ForwardChecking(grilla, sectores,segmentos, casillas_vacias)){
-                std:: cout<< "true\n";
                 return true;
             }
             grilla[row][col] = 0;
-        }
-             
+        }      
     }
-    
     return false;
 }
 
 
 int main(int argc, char const *argv[])
 {   
-    int array[9][9][9] = {};
-    std::cout << "arreglo vacio:" << array[0][0][0]<< "\n";
-    char archivo [1000] = "instancias-ejem/moderate_filled.txt";
+    char archivo [1000] = "instancias-ejem/easy.txt";
     instance instancia(archivo);
-
+    /*
     for(int i = 0; i < 9; i++){
         for(int j = 0; j < 9; j++){
             std:: cout << instancia.sectores[i][j] << " ";
         }
         std:: cout << "\n";
     }
-
-    std:: cout<< "Matriz\n";
+    */
+    /*std:: cout<< "Matriz\n";
 
     for (int i = 0; i < 9 ; i++){
         for (int j = 0; j < 9; j++){
@@ -139,7 +143,7 @@ int main(int argc, char const *argv[])
     while(iterador != instancia.segmentos.end()){
         std:: cout<< iterador->identificador << ":"<< iterador -> suma_segmento <<"\n";
         iterador ++;
-    }
+    }*/
 
     /*std:: list <unassigned>:: iterator iterador2 = instancia.casillas_vacias.begin();
     while(iterador2 != instancia.casillas_vacias.end()){
@@ -148,14 +152,16 @@ int main(int argc, char const *argv[])
         iterador2 ++;
 
     } */
+
+    /*
     if (CheckSum(instancia.cuadricula, instancia.sectores, 2, instancia.segmentos))
         std:: cout << "Cumple con la suma\n";
     else 
         std:: cout << "No cumple con la suma\n";
 
-
+    */
+    std:: cout << "tamaño de la lista: "<<instancia.casillas_vacias.size() <<"\n";
     ForwardChecking(instancia.cuadricula, instancia.sectores, instancia.segmentos, instancia.casillas_vacias);
-    int nada = pico(instancia.cuadricula);
     for (int i = 0; i < 9 ; i++){
         for (int j = 0; j < 9; j++){
             std:: cout<< instancia.cuadricula[i][j] << " ";

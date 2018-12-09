@@ -38,9 +38,8 @@ instance::instance(char archivo [1000])
             {
                 if (fila[i] > 0){
                     this -> cuadricula [cont][i] = fila[i];
-
                 }
-
+                
                 else{
                     unassigned casilla_vacia;
                     casilla_vacia.fila = cont;
@@ -54,13 +53,13 @@ instance::instance(char archivo [1000])
             cont ++;
         }
 
-        std:: cout << "INICIO \n";
+        //std:: cout << "INICIO \n";
         while(!feof(pFile)){
             segmento seg;
             int sector;
             int suma;
             fscanf(pFile, "%c%i:%i\n", &c, &sector, &suma);
-            std:: cout << sector << "\n"; 
+           // std:: cout << sector << "\n"; 
             seg.identificador = sector; 
             seg.suma_segmento = suma;
             this -> segmentos.push_back(seg);
