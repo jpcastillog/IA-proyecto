@@ -1,3 +1,5 @@
+#ifndef _INSTANCE_H
+#define _INSTANCE_H
 #include <iostream>
 #include <list>
 #include <string.h>
@@ -23,3 +25,4 @@ public:
     instance(char archivo[1000]);
     ~instance();
 };
+#endif
